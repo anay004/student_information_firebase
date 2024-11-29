@@ -1,5 +1,6 @@
 //model class
 class Note {
+  String? imagepath;
   String? id;
   String? name;
   String? phone;
@@ -9,12 +10,15 @@ class Note {
 
   //constructor
   Note({
+
     required this.id,
     required this.name,
     required this.phone,
     required this.department,
     required this.email,
     required this.address,
+    required this.imagepath,
+
   });
   Map<String, dynamic> toJson() {
     return {
@@ -24,6 +28,7 @@ class Note {
       'department': department,
       'email': email,
       'address': address,
+      'image': imagepath,
     };
   }
   static Note fromJson(Map<String,dynamic> json){
@@ -34,6 +39,7 @@ class Note {
       department:json['department'],
       email: json['email'],
       address:json['address'],
+      imagepath:json['image'],
     );
   }
 }

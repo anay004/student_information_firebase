@@ -24,6 +24,7 @@ class NoteService {
               department: 'department',
               email: 'email',
               address: 'address',
+              imagepath: 'image',
 
           ); // Return empty Note on error
         }

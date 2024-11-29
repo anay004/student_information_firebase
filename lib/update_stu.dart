@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:student_information_firebase/model/notes.dart';
 import 'package:student_information_firebase/services/note_service.dart';
 import 'home_page.dart';
@@ -11,12 +14,10 @@ class UpdateStu extends StatefulWidget {
   const UpdateStu ({super.key,required this.notes});
 
   @override
-  State<UpdateStu > createState() => _UpdateStuState();
+  State<UpdateStu> createState() => _UpdateStuState();
 }
 
 class _UpdateStuState extends State<UpdateStu> {
-
-
   var idController = TextEditingController();
   var nameController = TextEditingController();
   var phoneController = TextEditingController();
@@ -24,13 +25,14 @@ class _UpdateStuState extends State<UpdateStu> {
   var emailController = TextEditingController();
   var addressController = TextEditingController();
 
+  File? selectedImage;
   final GlobalKey<FormState> noteFormKey = GlobalKey();
-
   String? id;
 
-  //add notes to database
-  Future  updateNotes(String id) async
-  {
+  final ImagePicker _picker = ImagePicker();
+
+  // Add Notes to Database
+  Future updateNotes(String id) async {
     final updatedNote = Note(
       id: idController.text,
       name: nameController.text,
@@ -38,66 +40,46 @@ class _UpdateStuState extends State<UpdateStu> {
       department: departmentController.text,
       email: emailController.text,
       address: addressController.text,
+      // Add image URL or path here
+      imagepath: selectedImage?.path ?? widget.notes.imagepath,
     );
 
     final NoteService noteService = NoteService();
-    Future addStudent()async{
-      final newStudent=Note(
-        id: idController.text,
-        name: nameController.text,
-        phone: phoneController.text,
-        department: departmentController.text,
-        email: emailController.text,
-        address: addressController.text,
+    await noteService.updateStudent(updatedNote);
 
-      );
-      await noteService.addStudent(newStudent);
-      Get.back();
-    }
+    Get.snackbar("", "",
+        titleText: Text("Successfully Info Updated", style: GoogleFonts.lato(
+          textStyle: TextStyle(
+            fontSize: 14,
+            color: Colors.white,
+          ),
+        ),),
+        snackPosition: SnackPosition.BOTTOM);
+    Get.offAll(HomePage());
+  }
 
-    int check= 0;
-    print("Check=$check");
-    if(check>0)
-    {
-
-      Get.snackbar("", "",
-          titleText: Text("Updated, Info Updated", style: GoogleFonts.lato(
-            textStyle: TextStyle(
-              fontSize: 14,
-              color: Colors.white,
-            ),
-          ),),
-          snackPosition: SnackPosition.BOTTOM);
-      Get.offAll(HomePage());
-
-    }
-    else
-    {
-      Get.snackbar("", "",
-          titleText: Text("Error in Info update", style: GoogleFonts.lato(
-            textStyle: TextStyle(
-              fontSize: 14,
-              color: Colors.white,
-            ),
-          ),),
-          snackPosition: SnackPosition.BOTTOM);
+  Future pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        selectedImage = File(pickedFile.path);
+      });
     }
   }
 
-
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    idController.text=widget.notes.id;
-    nameController.text=widget.notes.name;
-    phoneController.text=widget.notes.phone;
-    departmentController.text=widget.notes.department;
-    emailController.text=widget.notes.email;
-    addressController.text=widget.notes.address;
-    id=widget.notes.id;
-
-
+    idController.text = widget.notes.id;
+    nameController.text = widget.notes.name;
+    phoneController.text = widget.notes.phone;
+    departmentController.text = widget.notes.department;
+    emailController.text = widget.notes.email;
+    addressController.text = widget.notes.address;
+    id = widget.notes.id;
+    if (widget.notes.imagepath != null) {
+      selectedImage = File(widget.notes.imagepath);
+    }
   }
 
   @override
@@ -123,6 +105,48 @@ class _UpdateStuState extends State<UpdateStu> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+
+              // Image Picker Section
+              Text(
+                "Profile Image:",
+                style: GoogleFonts.lato(
+                  textStyle: const TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ),
+              const SizedBox(height: 10),
+              GestureDetector(
+                onTap: pickImage,
+                child: Container(
+                  height: 150,
+                  width: 150,
+                  decoration: BoxDecoration(
+                    color: Colors.teal[900],
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white),
+                  ),
+                  child: selectedImage != null
+                      ? ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.file(
+                      selectedImage!,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                      : widget.notes.imagepath != null
+                      ? ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.file(
+                      File(widget.notes.imagepath),
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                      : Icon(
+                    Icons.camera_alt,
+                    color: Colors.white,
+                    size: 50,
+                  ),
+                ),
+              ),
 
               // ID Input Field
               Text("ID:",

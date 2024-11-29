@@ -1,10 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:student_information_firebase/home_page.dart';
 import 'package:student_information_firebase/services/note_service.dart';
 
-import 'database/db_helper.dart';
 import 'model/notes.dart';
 
 class AddStu extends StatefulWidget {
@@ -15,18 +16,31 @@ class AddStu extends StatefulWidget {
 }
 
 class _AddStuState extends State<AddStu> {
-
   var idController = TextEditingController();
   var nameController = TextEditingController();
   var phoneController = TextEditingController();
   var departmentController = TextEditingController();
   var emailController = TextEditingController();
   var addressController = TextEditingController();
+  final GlobalKey<FormState> infoFormKey = GlobalKey();
 
-  final GlobalKey<FormState> infoFormKey= GlobalKey();
+  File? _pickedImage;
 
-  Future addstu() async {
-    // Create a new Note object
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedImage = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 50,
+    );
+
+    if (pickedImage != null) {
+      setState(() {
+        _pickedImage = File(pickedImage.path);
+      });
+    }
+  }
+
+  Future<void> addstu() async {
     final newNote = Note(
       id: idController.text,
       name: nameController.text,
@@ -34,16 +48,14 @@ class _AddStuState extends State<AddStu> {
       department: departmentController.text,
       email: emailController.text,
       address: addressController.text,
+      imagepath: _pickedImage?.path, // Save image path
     );
 
-    // Initialize NoteService
     final NoteService noteService = NoteService();
 
     try {
-      // Add student to Firebase
       await noteService.addStudent(newNote);
 
-      // Show success snackbar
       Get.snackbar(
         "",
         "",
@@ -58,14 +70,10 @@ class _AddStuState extends State<AddStu> {
         ),
         snackPosition: SnackPosition.BOTTOM,
       );
-
-      // Navigate back to HomePage
       Get.offAll(HomePage());
     } catch (error) {
-      // Handle error
       print("Error: $error");
 
-      // Show error snackbar
       Get.snackbar(
         "",
         "",
@@ -82,7 +90,6 @@ class _AddStuState extends State<AddStu> {
       );
     }
   }
-
   @override
   void initState() {
   }
@@ -103,6 +110,37 @@ class _AddStuState extends State<AddStu> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Image Picker Section
+              Column(
+                children: [
+                  // Image Preview
+                  _pickedImage == null
+                      ? Text(
+                    "No image selected",
+                    style: TextStyle(color: Colors.white),
+                  )
+                      : Image.file(
+                    _pickedImage!,
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+                  SizedBox(height: 10),
+                  // Pick Image Button
+                  ElevatedButton.icon(
+                    onPressed: _pickImage,
+                    icon: Icon(Icons.image),
+                    label: Text("Pick Image"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                    ),
+                  ),
+                ],
+              ),
+
+
+
               // ID Input Field
               Text("ID:",
                 style: GoogleFonts.lato(
@@ -128,21 +166,21 @@ class _AddStuState extends State<AddStu> {
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
                       color: Colors.grey, // Border color
-                      width: 3,         // Thickness of the border
+                      width: 3,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
                       color: Colors.blueGrey, // Border color for enabled state
-                      width: 3,         // Thickness of the border
+                      width: 3,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
                       color: Colors.grey, // Border color when focused
-                      width: 3,         // Thickness when focused
+                      width: 3,
                     ),
                   ),
                 ),
@@ -181,22 +219,22 @@ class _AddStuState extends State<AddStu> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
-                      color: Colors.grey, // Border color
-                      width: 3,         // Thickness of the border
+                      color: Colors.grey,
+                      width: 3,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
-                      color: Colors.blueGrey, // Border color for enabled state
-                      width: 3,         // Thickness of the border
+                      color: Colors.blueGrey,
+                      width: 3,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
-                      color: Colors.grey, // Border color when focused
-                      width: 3,         // Thickness when focused
+                      color: Colors.grey,
+                      width: 3,
                     ),
                   ),
                 ),
@@ -235,22 +273,22 @@ class _AddStuState extends State<AddStu> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
-                      color: Colors.grey, // Border color
-                      width: 3,         // Thickness of the border
+                      color: Colors.grey,
+                      width: 3,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
-                      color: Colors.blueGrey, // Border color for enabled state
-                      width: 3,         // Thickness of the border
+                      color: Colors.blueGrey,
+                      width: 3,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
-                      color: Colors.grey, // Border color when focused
-                      width: 3,         // Thickness when focused
+                      color: Colors.grey,
+                      width: 3,
                     ),
                   ),
                 ),
@@ -288,22 +326,22 @@ class _AddStuState extends State<AddStu> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
-                      color: Colors.grey, // Border color
-                      width: 3,         // Thickness of the border
+                      color: Colors.grey,
+                      width: 3,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
-                      color: Colors.blueGrey, // Border color for enabled state
-                      width: 3,         // Thickness of the border
+                      color: Colors.blueGrey,
+                      width: 3,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
-                      color: Colors.grey, // Border color when focused
-                      width: 3,         // Thickness when focused
+                      color: Colors.grey,
+                      width: 3,
                     ),
                   ),
                 ),
@@ -342,22 +380,22 @@ class _AddStuState extends State<AddStu> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
-                      color: Colors.grey, // Border color
-                      width: 3,         // Thickness of the border
+                      color: Colors.grey,
+                      width: 3,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
-                      color: Colors.blueGrey, // Border color for enabled state
-                      width: 3,         // Thickness of the border
+                      color: Colors.blueGrey,
+                      width: 3,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
-                      color: Colors.grey, // Border color when focused
-                      width: 3,         // Thickness when focused
+                      color: Colors.grey,
+                      width: 3,
                     ),
                   ),
                 ),
@@ -394,22 +432,22 @@ class _AddStuState extends State<AddStu> {
                    border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
-                      color: Colors.grey, // Border color
-                      width: 3,         // Thickness of the border
+                      color: Colors.grey,
+                      width: 3,
                     ),
                    ),
                    enabledBorder: OutlineInputBorder(
                      borderRadius: BorderRadius.circular(8),
                      borderSide: BorderSide(
-                       color: Colors.blueGrey, // Border color for enabled state
-                       width: 3,         // Thickness of the border
+                       color: Colors.blueGrey,
+                       width: 3,
                      ),
                    ),
                    focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
-                      color: Colors.grey, // Border color when focused
-                      width: 3,         // Thickness when focused
+                      color: Colors.grey,
+                      width: 3,
                     ),
                   ),
                 ),
